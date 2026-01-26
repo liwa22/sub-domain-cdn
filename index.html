@@ -3,257 +3,171 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CDN VIDEY - Premium Streaming</title>
+  <title>CDN VIDEY - Fast Streaming</title>
   
+  <!-- Tailwind tetap digunakan, tapi diletakkan di atas agar render cepat -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    :root {
-      --glass-bg: rgba(255, 255, 255, 0.6);
-      --glass-border: rgba(255, 255, 255, 0.4);
-      --ios-blue: #007AFF;
-    }
-
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    :root { --ios-blue: #007AFF; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(circle at top right, #e2e8f0, #ffffff),
-                  radial-gradient(circle at bottom left, #dbeafe, #ffffff);
-      background-attachment: fixed;
-      color: #1d1d1f;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top right, #f8fafc, #ffffff);
       min-height: 100vh;
+      color: #1d1d1f;
     }
-
     .glass-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-    }
-
-    header {
-      backdrop-filter: blur(25px) saturate(200%);
-      -webkit-backdrop-filter: blur(25px) saturate(200%);
       background: rgba(255, 255, 255, 0.7);
-      border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
     }
-
     #video-container {
       width: 100%;
       max-width: 1100px;
       margin: 0 auto;
-      position: relative;
-      border-radius: 32px;
+      border-radius: 24px;
       overflow: hidden;
       background: #000;
-      box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15);
-      border: 4px solid white;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
     }
-
-    #video-player {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      display: block;
-    }
-
-    .loading-spinner {
-      border: 3px solid rgba(0, 0, 0, 0.1);
-      border-top: 3px solid var(--ios-blue);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 0.8s linear infinite;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      margin-top: -20px;
-      margin-left: -20px;
-      z-index: 20;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .btn-ios {
-      background: rgba(0, 122, 255, 0.9);
-      color: white;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-    }
+    video { width: 100%; aspect-ratio: 16/9; display: block; }
     
-    .btn-ios:hover {
-      transform: scale(1.02);
-      background: #007AFF;
+    /* Loading Spinner Simple & Fast */
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--ios-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 20px auto;
     }
-
-    .btn-secondary-glass {
-      background: rgba(255, 255, 255, 0.5);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      color: #1d1d1f;
-      transition: all 0.2s;
-    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
-  <header class="sticky top-0 z-50 px-6 py-3">
+  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg">
-          <i class="fas fa-play text-white text-sm"></i>
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+          <i class="fas fa-play text-white text-xs"></i>
         </div>
-        <div>
-          <h1 class="text-lg font-bold tracking-tight text-slate-800 leading-none">Stream<span class="text-blue-600">Enak</span></h1>
-          <span class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Pro Edition</span>
-        </div>
+        <h1 class="text-lg font-bold">Stream<span class="text-blue-600">Enak</span></h1>
       </div>
-      <nav>
-        <a href="https://videi.my.id/" class="btn-ios text-sm px-6 py-2.5 rounded-full font-medium flex items-center">
-          <i class="fas fa-plus mr-2"></i> Upload
-        </a>
-      </nav>
+      <a href="https://videi.my.id/" class="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-semibold">Upload</a>
     </div>
   </header>
 
-  <main class="flex-grow py-10 px-4">
+  <main class="py-8 px-4">
     <div class="max-w-6xl mx-auto">
       
-      <div id="video-container" class="mb-10">
-        <div class="loading-spinner" id="loading-spinner"></div>
-        <video 
-          id="video-player" 
-          controls 
-          preload="auto"
-          controlsList="nodownload noremoteplayback" 
-          disablePictureInPicture>
-        </video>
+      <!-- Container Video -->
+      <div id="video-container">
+        <div id="loading-area" class="py-20 text-center">
+            <div class="spinner"></div>
+            <p class="text-gray-400 animate-pulse">Menghubungkan ke server...</p>
+        </div>
+        <video id="video-player" controls preload="auto" class="hidden" playsinline></video>
       </div>
 
-      <div id="error-message" class="hidden mb-8 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl text-center shadow-sm">
-        <i class="fas fa-exclamation-circle mr-2"></i>
-        <span id="error-text"></span>
+      <!-- Error Message -->
+      <div id="error-message" class="hidden mt-6 p-4 bg-red-50 text-red-600 rounded-xl text-center">
+        <i class="fas fa-exclamation-triangle mr-2"></i> <span id="error-text"></span>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-2 space-y-6">
-          <div class="glass-card p-8 rounded-[32px]">
-            <h2 id="video-title" class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Memuat Judul...</h2>
-            
-            <div class="flex flex-wrap items-center gap-3 text-sm mb-6">
-              <div class="flex items-center bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full font-bold">
-                <i class="fas fa-star mr-1.5 text-xs"></i>
-                <span>Premium Quality</span>
-              </div>
-              <span class="bg-white/50 px-4 py-1.5 rounded-full text-slate-600 font-medium">
-                <i class="far fa-eye mr-2"></i>1.2M Views
-              </span>
-            </div>
-
-            <div class="h-[1px] bg-slate-200 w-full mb-6"></div>
-
-            <div>
-              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Deskripsi Video</h3>
-              <p id="video-description" class="text-slate-700 leading-relaxed text-lg">
-                Memuat deskripsi video...
-              </p>
-            </div>
+      <!-- Info Video -->
+      <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+          <div class="glass-card p-6 rounded-[24px]">
+            <h2 id="v-title" class="text-2xl font-bold mb-2">Memuat...</h2>
+            <p id="v-desc" class="text-gray-600">Sedang mencari data video...</p>
           </div>
         </div>
-
+        
         <div class="space-y-4">
-          <div class="glass-card p-6 rounded-[32px] flex flex-col gap-3">
-            <button id="share-button" class="w-full btn-secondary-glass font-bold py-4 px-6 rounded-2xl flex items-center justify-center group">
-              <i class="fas fa-share-nodes mr-3 text-blue-500 group-hover:scale-110 transition-transform"></i> 
-              Bagikan Video
+            <button id="btn-share" class="w-full bg-white border border-gray-200 font-bold py-4 rounded-2xl shadow-sm hover:bg-gray-50 transition">
+                <i class="fas fa-share-nodes mr-2 text-blue-500"></i> Salin Link Video
             </button>
-          </div>
         </div>
       </div>
     </div>
   </main>
 
   <script>
-    // --- KLIK MANA SAJA UNTUK IKLAN ---
+    // URL Iklan
+    const ADS_URL = 'https://otieu.com/4/9938705';
+    // URL JSON (Ganti 'Video.json' jika namanya berbeda di GitHub)
+    // Menggunakan path relatif agar 1 repo lebih cepat
+    const JSON_DATA = 'Video.json'; 
+
     document.addEventListener('click', function(e) {
-        // Mencegah iklan terbuka jika yang diklik adalah tombol share atau kontrol video
-        if (!e.target.closest('#share-button') && !e.target.closest('#video-player')) {
-            window.open('https://otieu.com/4/9938705', '_blank');
+        if (!e.target.closest('#btn-share') && !e.target.closest('#video-player')) {
+            window.open(ADS_URL, '_blank');
         }
     });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      const videoPlayer = document.getElementById('video-player');
-      const videoTitle = document.getElementById('video-title');
-      const videoDescription = document.getElementById('video-description');
-      const loadingSpinner = document.getElementById('loading-spinner');
-      const errorMessage = document.getElementById('error-message');
-      const errorText = document.getElementById('error-text');
-      const shareButton = document.getElementById('share-button');
+    async function initPlayer() {
+        const vPlayer = document.getElementById('video-player');
+        const vTitle = document.getElementById('v-title');
+        const vDesc = document.getElementById('v-desc');
+        const loadArea = document.getElementById('loading-area');
+        const errorArea = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
 
-      // --- PERBAIKAN PENGAMBILAN ID VIDEO ---
-      // Mengambil gabungan pathname dan search (?...)
-      let fullPath = window.location.pathname + window.location.search;
-      
-      // Menghapus karakter /, ?, dan e/ di awal string
-      // Ini akan menangani: /e/ID, /ID, ?/e/ID, dan ?/ID
-      let videoId = fullPath
-        .replace(/^\//, '')    // Hapus / di depan
-        .replace(/^\?/, '')    // Hapus ? di depan
-        .replace(/^\//, '')    // Hapus / lagi (jika formatnya ?/)
-        .replace(/^e\//, '');  // Hapus e/ jika ada
+        // 1. Ambil ID dari URL (Support normal & format ?/)
+        const fullPath = window.location.pathname + window.location.search;
+        const videoId = fullPath.replace(/^\//, '').replace(/^\?/, '').replace(/^\//, '').replace(/^e\//, '');
 
-      if (!videoId || videoId === "/") {
-        loadingSpinner.style.display = 'none';
-        errorText.textContent = 'ID video tidak ditemukan di URL.';
-        errorMessage.classList.remove('hidden');
-        return;
-      }
-
-      try {
-        const response = await axios.get('https://raw.githubusercontent.com/liwa22/json/refs/heads/main/Video.json');
-        const videos = response.data;
-        
-        // Cari video berdasarkan ID
-        const foundVideo = videos.find(v => v.id === videoId);
-
-        if (foundVideo) {
-          videoPlayer.src = foundVideo.Url + "#t=0.1"; 
-          videoTitle.textContent = foundVideo.Judul || 'Untitled Video';
-          videoDescription.textContent = foundVideo.Description || 'Tidak ada deskripsi.';
-          videoPlayer.load();
-        } else {
-          errorText.textContent = `Video dengan ID: ${videoId} tidak ditemukan dalam database.`;
-          errorMessage.classList.remove('hidden');
+        if (!videoId || videoId === "/") {
+            loadArea.classList.add('hidden');
+            errorText.textContent = "ID Video tidak ditemukan.";
+            errorArea.classList.remove('hidden');
+            return;
         }
-      } catch (error) {
-        errorText.textContent = 'Gagal mengambil data dari server.';
-        errorMessage.classList.remove('hidden');
-      } finally {
-        loadingSpinner.style.display = 'none';
-      }
 
-      // Share function
-      shareButton.addEventListener('click', async () => {
         try {
-          await navigator.clipboard.writeText(window.location.href);
-          const originalText = shareButton.innerHTML;
-          shareButton.innerHTML = '<i class="fas fa-check mr-2 text-green-500"></i> Berhasil Disalin';
-          setTimeout(() => { shareButton.innerHTML = originalText; }, 2000);
-        } catch {
-          alert('Link: ' + window.location.href);
-        }
-      });
+            // 2. Fetch Data (Gunakan fetch bawaan, lebih cepat dari Axios)
+            const response = await fetch(JSON_DATA);
+            if (!response.ok) throw new Error('Gagal ambil JSON');
+            
+            const videos = await response.json();
+            const video = videos.find(item => item.id === videoId);
 
-      // Proteksi Klik Kanan pada Video
-      videoPlayer.addEventListener('contextmenu', e => e.preventDefault());
+            if (video) {
+                // 3. Set Video & Tampilkan
+                vPlayer.src = video.Url;
+                vTitle.textContent = video.Judul || 'No Title';
+                vDesc.textContent = video.Description || 'No Description';
+                
+                vPlayer.classList.remove('hidden');
+                loadArea.classList.add('hidden');
+                vPlayer.load();
+            } else {
+                throw new Error('Video tidak ditemukan di database.');
+            }
+        } catch (err) {
+            loadArea.classList.add('hidden');
+            errorText.textContent = err.message;
+            errorArea.classList.remove('hidden');
+        }
+    }
+
+    // Tombol Share
+    document.getElementById('btn-share').addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            alert('Link berhasil disalin!');
+        } catch (err) {
+            alert('Gagal menyalin link.');
+        }
     });
+
+    // Jalankan secepat mungkin
+    initPlayer();
   </script>
 </body>
 </html>
