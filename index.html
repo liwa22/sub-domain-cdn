@@ -20,16 +20,13 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      /* Background khas iOS 26: Mesh Gradient Cerah */
       background: radial-gradient(circle at top right, #e2e8f0, #ffffff),
                   radial-gradient(circle at bottom left, #dbeafe, #ffffff);
       background-attachment: fixed;
       color: #1d1d1f;
       min-height: 100vh;
-      cursor: pointer; /* Memberi petunjuk bahwa halaman bisa diklik */
     }
 
-    /* Glassmorphism Effect */
     .glass-card {
       background: var(--glass-bg);
       backdrop-filter: blur(20px) saturate(180%);
@@ -50,7 +47,7 @@
       max-width: 1100px;
       margin: 0 auto;
       position: relative;
-      border-radius: 32px; /* iOS Style extra rounded */
+      border-radius: 32px;
       overflow: hidden;
       background: #000;
       box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15);
@@ -63,7 +60,6 @@
       display: block;
     }
 
-    /* Loading Spinner iOS Style */
     .loading-spinner {
       border: 3px solid rgba(0, 0, 0, 0.1);
       border-top: 3px solid var(--ios-blue);
@@ -94,7 +90,6 @@
     .btn-ios:hover {
       transform: scale(1.02);
       background: #007AFF;
-      box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
     }
 
     .btn-secondary-glass {
@@ -104,15 +99,6 @@
       color: #1d1d1f;
       transition: all 0.2s;
     }
-
-    .btn-secondary-glass:hover {
-      background: rgba(255, 255, 255, 0.8);
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -139,14 +125,12 @@
   <main class="flex-grow py-10 px-4">
     <div class="max-w-6xl mx-auto">
       
-      <!-- Video Stage -->
       <div id="video-container" class="mb-10">
         <div class="loading-spinner" id="loading-spinner"></div>
         <video 
           id="video-player" 
           controls 
           preload="auto"
-          poster=""
           controlsList="nodownload noremoteplayback" 
           disablePictureInPicture>
         </video>
@@ -157,7 +141,6 @@
         <span id="error-text"></span>
       </div>
 
-      <!-- Video Info Section -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 space-y-6">
           <div class="glass-card p-8 rounded-[32px]">
@@ -170,9 +153,6 @@
               </div>
               <span class="bg-white/50 px-4 py-1.5 rounded-full text-slate-600 font-medium">
                 <i class="far fa-eye mr-2"></i>1.2M Views
-              </span>
-              <span class="bg-white/50 px-4 py-1.5 rounded-full text-slate-600 font-medium">
-                <i class="far fa-calendar-alt mr-2"></i>2026
               </span>
             </div>
 
@@ -187,59 +167,28 @@
           </div>
         </div>
 
-        <!-- Sidebar / Action Area -->
         <div class="space-y-4">
           <div class="glass-card p-6 rounded-[32px] flex flex-col gap-3">
             <button id="share-button" class="w-full btn-secondary-glass font-bold py-4 px-6 rounded-2xl flex items-center justify-center group">
               <i class="fas fa-share-nodes mr-3 text-blue-500 group-hover:scale-110 transition-transform"></i> 
               Bagikan Video
             </button>
-            
-            <div class="p-5 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl text-white shadow-lg shadow-blue-200">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-medium opacity-80">Streaming Status</span>
-                <span class="flex h-2 w-2 rounded-full bg-green-400"></span>
-              </div>
-              <p class="text-xl font-bold">Ultra HD 4K</p>
-              <p class="text-[10px] opacity-70 mt-1 uppercase tracking-tighter font-semibold">Ready for Apple Vision Pro</p>
-            </div>
-          </div>
-
-          <!-- Quick Tip Card -->
-          <div class="bg-white/30 border border-white/50 p-6 rounded-[32px] text-center backdrop-blur-sm">
-            <p class="text-slate-500 text-xs italic">"Gunakan headphone untuk pengalaman audio spasial terbaik."</p>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <footer class="py-12 px-6 text-center">
-    <div class="max-w-md mx-auto">
-      <div class="flex justify-center space-x-6 mb-6 opacity-40">
-        <i class="fab fa-apple text-2xl"></i>
-        <i class="fas fa-cloud text-2xl"></i>
-        <i class="fas fa-shield-halved text-2xl"></i>
-      </div>
-      <p class="text-slate-400 text-sm font-medium">&copy; 2026 <span class="text-slate-900">CDN VIDEY</span>. Crafted for Excellence.</p>
-    </div>
-  </footer>
-
   <script>
-    // --- SKRIP IKLAN DIRECT LINK (CLICK ANYWHERE) ---
-    document.addEventListener('click', function() {
-      // Membuka iklan di tab baru setiap kali ada klik di halaman
-      window.open('https://otieu.com/4/9938705', '_blank');
+    // --- KLIK MANA SAJA UNTUK IKLAN ---
+    document.addEventListener('click', function(e) {
+        // Mencegah iklan terbuka jika yang diklik adalah tombol share atau kontrol video
+        if (!e.target.closest('#share-button') && !e.target.closest('#video-player')) {
+            window.open('https://otieu.com/4/9938705', '_blank');
+        }
     });
 
-    // Script logika utama
     document.addEventListener('DOMContentLoaded', async () => {
-      let urlPath = window.location.pathname;
-      let videoId = '';
-
-      if (urlPath.startsWith('/')) { urlPath = urlPath.substring(1); }
-      if (urlPath.startsWith('e/')) { videoId = urlPath.substring(2); } else { videoId = urlPath; }
-
       const videoPlayer = document.getElementById('video-player');
       const videoTitle = document.getElementById('video-title');
       const videoDescription = document.getElementById('video-description');
@@ -248,52 +197,63 @@
       const errorText = document.getElementById('error-text');
       const shareButton = document.getElementById('share-button');
 
-      if (!videoId) {
-        errorText.textContent = 'ID video tidak ditemukan.';
+      // --- PERBAIKAN PENGAMBILAN ID VIDEO ---
+      // Mengambil gabungan pathname dan search (?...)
+      let fullPath = window.location.pathname + window.location.search;
+      
+      // Menghapus karakter /, ?, dan e/ di awal string
+      // Ini akan menangani: /e/ID, /ID, ?/e/ID, dan ?/ID
+      let videoId = fullPath
+        .replace(/^\//, '')    // Hapus / di depan
+        .replace(/^\?/, '')    // Hapus ? di depan
+        .replace(/^\//, '')    // Hapus / lagi (jika formatnya ?/)
+        .replace(/^e\//, '');  // Hapus e/ jika ada
+
+      if (!videoId || videoId === "/") {
+        loadingSpinner.style.display = 'none';
+        errorText.textContent = 'ID video tidak ditemukan di URL.';
         errorMessage.classList.remove('hidden');
         return;
       }
 
-      loadingSpinner.style.display = 'block';
-
       try {
-        const response = await axios.get('https://raw.githubusercontent.com/liwa22/json/refs/heads/main/Video.json', { timeout: 10000 });
+        const response = await axios.get('https://raw.githubusercontent.com/liwa22/json/refs/heads/main/Video.json');
         const videos = response.data;
-        const foundVideo = videos.find(video => video.id === videoId);
+        
+        // Cari video berdasarkan ID
+        const foundVideo = videos.find(v => v.id === videoId);
 
         if (foundVideo) {
-          const videoUrl = foundVideo.Url;
-          videoPlayer.src = videoUrl + "#t=1.0"; 
+          videoPlayer.src = foundVideo.Url + "#t=0.1"; 
           videoTitle.textContent = foundVideo.Judul || 'Untitled Video';
           videoDescription.textContent = foundVideo.Description || 'Tidak ada deskripsi.';
           videoPlayer.load();
         } else {
-          errorText.textContent = `Video ID ${videoId} tidak ditemukan.`;
+          errorText.textContent = `Video dengan ID: ${videoId} tidak ditemukan dalam database.`;
           errorMessage.classList.remove('hidden');
         }
       } catch (error) {
-        errorText.textContent = 'Gagal memuat data video.';
+        errorText.textContent = 'Gagal mengambil data dari server.';
         errorMessage.classList.remove('hidden');
       } finally {
         loadingSpinner.style.display = 'none';
       }
 
-      shareButton.addEventListener('click', async (e) => {
-        // StopPropagation agar tidak memicu double iklan jika tidak diinginkan
-        // Namun karena permintaan "klik dimana saja", ini tetap akan memicu iklan dari listener document
-        const currentUrl = window.location.href;
+      // Share function
+      shareButton.addEventListener('click', async () => {
         try {
-          await navigator.clipboard.writeText(currentUrl);
+          await navigator.clipboard.writeText(window.location.href);
           const originalText = shareButton.innerHTML;
           shareButton.innerHTML = '<i class="fas fa-check mr-2 text-green-500"></i> Berhasil Disalin';
           setTimeout(() => { shareButton.innerHTML = originalText; }, 2000);
         } catch {
-          alert('Link: ' + currentUrl);
+          alert('Link: ' + window.location.href);
         }
       });
-    });
 
-    videoPlayer.addEventListener('contextmenu', e => e.preventDefault());
+      // Proteksi Klik Kanan pada Video
+      videoPlayer.addEventListener('contextmenu', e => e.preventDefault());
+    });
   </script>
 </body>
 </html>
