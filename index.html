@@ -115,56 +115,157 @@
         const data = await response.json();
         const videoData = data.find(v => v.id === videoId);
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Streaming...</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      background-color: #000;
+      display: flex; justify-content: center; align-items: center;
+      overflow: hidden;
+    }
+
+    /* Container untuk menumpuk video dan lapisan iklan */
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      display: none; /* Sembunyi sampai data siap */
+    }
+
+    /* Lapisan transparan penangkap klik iklan */
+    #ad-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 99;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Ikon Play Besar di Tengah agar user terpancing klik */
+    .play-hint {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+      border: 2px solid white;
+    }
+    .play-hint::after {
+      content: '';
+      display: block;
+      border-style: solid;
+      border-width: 15px 0 15px 25px;
+      border-color: transparent transparent transparent white;
+      margin-left: 5px;
+    }
+
+    .loader {
+      border: 4px solid #333;
+      border-top: 4px solid #007AFF;
+      border-radius: 50%;
+      width: 40px; height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    #msg { color: #fff; font-family: sans-serif; font-size: 14px; position: absolute; bottom: 20px; text-align: center; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <div class="video-container">
+    <div id="loader-box" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Tombol hantu/Overlay iklan -->
+    <div id="ad-overlay" style="display: none;">
+        <div class="play-hint"></div>
+    </div>
+
+    <video id="video-player" controls preload="auto" playsinline></video>
+  </div>
+  
+  <div id="msg"></div>
+
+  <script>
+    const JSON_FILE = 'Video.json';
+    const ADS_URL = 'https://otieu.com/4/9938705';
+
+    async function startPlayer() {
+      const player = document.getElementById('video-player');
+      const overlay = document.getElementById('ad-overlay');
+      const loader = document.getElementById('loader-box');
+      const msg = document.getElementById('msg');
+
+      // 1. Ambil ID dari URL (Support format ?/e/)
+      const fullPath = window.location.pathname + window.location.search;
+      const videoId = fullPath
+        .replace(/^\//, '').replace(/^\?/, '').replace(/^\//, '').replace(/^e\//, '');
+
+      if (!videoId || videoId === "/") {
+        loader.style.display = 'none';
+        msg.innerText = "Error: ID Video tidak ditemukan.";
+        return;
+      }
+
+      try {
+        const response = await fetch(JSON_FILE);
+        const data = await response.json();
+        const videoData = data.find(v => v.id === videoId);
+
         if (videoData && videoData.Url) {
           player.src = videoData.Url;
-          
-          player.oncanplay = () => {
-            loader.style.display = 'none';
-            player.style.display = 'block';
-            showAdOverlay(); // Munculkan iklan pertama kali
-          };
+          loader.style.display = 'none';
+          player.style.display = 'block';
+          overlay.style.display = 'flex'; // Tampilkan overlay iklan
+          player.load();
         } else {
-          throw new Error("Video tidak ditemukan.");
+          msg.innerText = "Video tidak ditemukan.";
+          loader.style.display = 'none';
         }
       } catch (err) {
         loader.style.display = 'none';
-        errorMsg.innerText = err.message;
+        msg.innerText = "Gagal memuat database.";
       }
 
-      // Fungsi memunculkan overlay iklan
-      function showAdOverlay() {
-        overlay.style.display = 'flex';
-      }
-
-      // Logika KLIK IKLAN (Berulang kali)
+      // 2. Logika Klik Iklan + Play
       overlay.addEventListener('click', function() {
-        const currentTime = new Date().getTime();
-        
         // Buka Iklan
         window.open(ADS_URL, '_blank');
         
         // Putar Video
         player.play();
         
-        // Sembunyikan Overlay
+        // Hapus Overlay agar user bisa akses kontrol video (pause/volume/full)
         overlay.style.display = 'none';
-        
-        // Catat waktu terakhir klik iklan
-        lastAdTime = currentTime;
       });
+    }
 
-      // LOGIKA RE-APPEAR: Munculkan iklan lagi saat video di-PAUSE
-      player.addEventListener('pause', () => {
-        const currentTime = new Date().getTime();
-        // Cek apakah sudah melewati masa cooldown (agar tidak spam berlebihan)
-        if (currentTime - lastAdTime > COOLDOWN_AD) {
-            showAdOverlay();
-        }
-      });
-
-      // OPSIONAL: Munculkan iklan setiap X menit meskipun video sedang jalan
-      // setInterval(() => {
-      //   if (!player.paused) {
+    startPlayer();
+    document.addEventListener('contextmenu', e => e.preventDefault());
+  </script>
+</body>
+</html>
+!player.paused) {
       //       showAdOverlay();
       //       player.pause();
       //   }
