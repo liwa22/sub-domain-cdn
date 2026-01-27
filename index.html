@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Streaming...</title>
+  <title>Streaming Video</title>
   <style>
     body, html {
       margin: 0; padding: 0;
@@ -11,36 +11,39 @@
       background-color: #000;
       display: flex; justify-content: center; align-items: center;
       overflow: hidden;
+      font-family: sans-serif;
     }
 
-    /* Container untuk menumpuk video dan lapisan iklan */
+    /* Container Utama */
     .video-container {
       position: relative;
       width: 100%;
       max-width: 100%;
       aspect-ratio: 16 / 9;
+      background: #000;
     }
 
     video {
       width: 100%;
       height: 100%;
-      display: none; /* Sembunyi sampai data siap */
+      display: none; /* Muncul setelah data siap */
     }
 
-    /* Lapisan transparan penangkap klik iklan */
+    /* Lapisan Iklan (Invisible Barrier) */
     #ad-overlay {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      z-index: 99;
+      z-index: 100; /* Harus di atas video */
       cursor: pointer;
-      display: flex;
+      display: none; /* Muncul setelah video siap */
       justify-content: center;
       align-items: center;
+      background: rgba(0, 0, 0, 0.1); /* Transparan */
     }
 
-    /* Ikon Play Besar di Tengah agar user terpancing klik */
-    .play-hint {
+    /* Tombol Play Palsu untuk memancing klik */
+    .play-button-visual {
       width: 80px;
       height: 80px;
       background: rgba(255, 255, 255, 0.2);
@@ -48,102 +51,123 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      backdrop-filter: blur(5px);
-      border: 2px solid white;
+      backdrop-filter: blur(8px);
+      border: 3px solid #fff;
+      transition: transform 0.2s ease;
     }
-    .play-hint::after {
+    
+    .play-button-visual:hover {
+      transform: scale(1.1);
+    }
+
+    .play-button-visual::after {
       content: '';
-      display: block;
       border-style: solid;
       border-width: 15px 0 15px 25px;
       border-color: transparent transparent transparent white;
       margin-left: 5px;
     }
 
+    /* Animasi Loading */
     .loader {
       border: 4px solid #333;
       border-top: 4px solid #007AFF;
       border-radius: 50%;
-      width: 40px; height: 40px;
+      width: 50px; height: 50px;
       animation: spin 1s linear infinite;
     }
 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    #msg { color: #fff; font-family: sans-serif; font-size: 14px; position: absolute; bottom: 20px; text-align: center; width: 100%; }
+
+    #error-msg {
+      color: #ff4444;
+      position: absolute;
+      text-align: center;
+      width: 100%;
+      top: 50%;
+    }
   </style>
 </head>
 <body>
 
   <div class="video-container">
+    <!-- Loading Spinner -->
     <div id="loader-box" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
         <div class="loader"></div>
     </div>
 
-    <!-- Tombol hantu/Overlay iklan -->
-    <div id="ad-overlay" style="display: none;">
-        <div class="play-hint"></div>
+    <!-- Tombol Iklan Lapisan Atas -->
+    <div id="ad-overlay">
+        <div class="play-button-visual"></div>
     </div>
 
+    <!-- Element Video -->
     <video id="video-player" controls preload="auto" playsinline></video>
+    
+    <div id="error-msg"></div>
   </div>
-  
-  <div id="msg"></div>
 
   <script>
+    // --- KONFIGURASI ---
     const JSON_FILE = 'Video.json';
-    const ADS_URL = 'https://otieu.com/4/9938705';
+    const ADS_URL = 'https://otieu.com/4/9938705'; // Link Iklan Anda
 
-    async function startPlayer() {
+    async function initPlayer() {
       const player = document.getElementById('video-player');
       const overlay = document.getElementById('ad-overlay');
       const loader = document.getElementById('loader-box');
-      const msg = document.getElementById('msg');
+      const errorMsg = document.getElementById('error-msg');
 
-      // 1. Ambil ID dari URL (Support format ?/e/)
-      const fullPath = window.location.pathname + window.location.search;
-      const videoId = fullPath
-        .replace(/^\//, '').replace(/^\?/, '').replace(/^\//, '').replace(/^e\//, '');
+      // 1. Ambil ID dari URL (Contoh: domain.com/?id123 atau domain.com/e/id123)
+      const path = window.location.search || window.location.pathname;
+      const videoId = path.replace(/[/?]/g, '').replace(/^e/, '');
 
-      if (!videoId || videoId === "/") {
+      if (!videoId) {
         loader.style.display = 'none';
-        msg.innerText = "Error: ID Video tidak ditemukan.";
+        errorMsg.innerText = "ID Video tidak ditemukan.";
         return;
       }
 
       try {
+        // 2. Ambil data dari JSON
         const response = await fetch(JSON_FILE);
         const data = await response.json();
         const videoData = data.find(v => v.id === videoId);
 
         if (videoData && videoData.Url) {
           player.src = videoData.Url;
-          loader.style.display = 'none';
-          player.style.display = 'block';
-          overlay.style.display = 'flex'; // Tampilkan overlay iklan
-          player.load();
+          
+          // Tunggu sampai video siap diputar
+          player.oncanplay = () => {
+            loader.style.display = 'none';
+            player.style.display = 'block';
+            overlay.style.display = 'flex'; // Tampilkan tombol iklan
+          };
         } else {
-          msg.innerText = "Video tidak ditemukan.";
-          loader.style.display = 'none';
+          throw new Error("Video tidak ada dalam database.");
         }
       } catch (err) {
         loader.style.display = 'none';
-        msg.innerText = "Gagal memuat database.";
+        errorMsg.innerText = err.message;
       }
 
-      // 2. Logika Klik Iklan + Play
+      // 3. Logika Klik Iklan + Play
       overlay.addEventListener('click', function() {
-        // Buka Iklan
+        // Buka iklan di tab baru
         window.open(ADS_URL, '_blank');
         
-        // Putar Video
+        // Putar video
         player.play();
         
-        // Hapus Overlay agar user bisa akses kontrol video (pause/volume/full)
+        // Hilangkan lapisan iklan agar user bisa pakai kontrol video (pause, volume, dll)
         overlay.style.display = 'none';
       });
     }
 
-    startPlayer();
+    // Jalankan player
+    initPlayer();
+
+    // Mencegah klik kanan
     document.addEventListener('contextmenu', e => e.preventDefault());
   </script>
 </body>
