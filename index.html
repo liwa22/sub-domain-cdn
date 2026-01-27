@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Streaming Video</title>
+  <title>Streaming Video Premium</title>
   <style>
     body, html {
       margin: 0; padding: 0;
@@ -14,7 +14,6 @@
       font-family: sans-serif;
     }
 
-    /* Container Utama */
     .video-container {
       position: relative;
       width: 100%;
@@ -26,40 +25,32 @@
     video {
       width: 100%;
       height: 100%;
-      display: none; /* Muncul setelah data siap */
+      display: none;
     }
 
-    /* Lapisan Iklan (Invisible Barrier) */
+    /* Overlay Iklan */
     #ad-overlay {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      z-index: 100; /* Harus di atas video */
+      z-index: 100;
       cursor: pointer;
-      display: none; /* Muncul setelah video siap */
+      display: none;
       justify-content: center;
       align-items: center;
-      background: rgba(0, 0, 0, 0.1); /* Transparan */
+      background: rgba(0, 0, 0, 0.3); /* Sedikit lebih gelap agar terlihat seperti dipause */
+      backdrop-filter: blur(2px);
     }
 
-    /* Tombol Play Palsu untuk memancing klik */
     .play-button-visual {
-      width: 80px;
-      height: 80px;
+      width: 80px; height: 80px;
       background: rgba(255, 255, 255, 0.2);
       border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(8px);
+      display: flex; justify-content: center; align-items: center;
       border: 3px solid #fff;
       transition: transform 0.2s ease;
     }
     
-    .play-button-visual:hover {
-      transform: scale(1.1);
-    }
-
     .play-button-visual::after {
       content: '';
       border-style: solid;
@@ -68,7 +59,6 @@
       margin-left: 5px;
     }
 
-    /* Animasi Loading */
     .loader {
       border: 4px solid #333;
       border-top: 4px solid #007AFF;
@@ -78,20 +68,12 @@
     }
 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    #error-msg {
-      color: #ff4444;
-      position: absolute;
-      text-align: center;
-      width: 100%;
-      top: 50%;
-    }
+    #error-msg { color: #ff4444; position: absolute; text-align: center; width: 100%; top: 50%; }
   </style>
 </head>
 <body>
 
   <div class="video-container">
-    <!-- Loading Spinner -->
     <div id="loader-box" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
         <div class="loader"></div>
     </div>
@@ -101,16 +83,17 @@
         <div class="play-button-visual"></div>
     </div>
 
-    <!-- Element Video -->
     <video id="video-player" controls preload="auto" playsinline></video>
-    
     <div id="error-msg"></div>
   </div>
 
   <script>
-    // --- KONFIGURASI ---
     const JSON_FILE = 'Video.json';
-    const ADS_URL = 'https://otieu.com/4/9938705'; // Link Iklan Anda
+    const ADS_URL = 'https://otieu.com/4/9938705';
+    
+    // Pengaturan Muncul Kembali
+    const COOLDOWN_AD = 10000; // Iklan muncul lagi minimal setelah 10 detik (mencegah user terlalu kesal)
+    let lastAdTime = 0;
 
     async function initPlayer() {
       const player = document.getElementById('video-player');
@@ -118,7 +101,6 @@
       const loader = document.getElementById('loader-box');
       const errorMsg = document.getElementById('error-msg');
 
-      // 1. Ambil ID dari URL (Contoh: domain.com/?id123 atau domain.com/e/id123)
       const path = window.location.search || window.location.pathname;
       const videoId = path.replace(/[/?]/g, '').replace(/^e/, '');
 
@@ -129,7 +111,6 @@
       }
 
       try {
-        // 2. Ambil data dari JSON
         const response = await fetch(JSON_FILE);
         const data = await response.json();
         const videoData = data.find(v => v.id === videoId);
@@ -137,37 +118,60 @@
         if (videoData && videoData.Url) {
           player.src = videoData.Url;
           
-          // Tunggu sampai video siap diputar
           player.oncanplay = () => {
             loader.style.display = 'none';
             player.style.display = 'block';
-            overlay.style.display = 'flex'; // Tampilkan tombol iklan
+            showAdOverlay(); // Munculkan iklan pertama kali
           };
         } else {
-          throw new Error("Video tidak ada dalam database.");
+          throw new Error("Video tidak ditemukan.");
         }
       } catch (err) {
         loader.style.display = 'none';
         errorMsg.innerText = err.message;
       }
 
-      // 3. Logika Klik Iklan + Play
+      // Fungsi memunculkan overlay iklan
+      function showAdOverlay() {
+        overlay.style.display = 'flex';
+      }
+
+      // Logika KLIK IKLAN (Berulang kali)
       overlay.addEventListener('click', function() {
-        // Buka iklan di tab baru
+        const currentTime = new Date().getTime();
+        
+        // Buka Iklan
         window.open(ADS_URL, '_blank');
         
-        // Putar video
+        // Putar Video
         player.play();
         
-        // Hilangkan lapisan iklan agar user bisa pakai kontrol video (pause, volume, dll)
+        // Sembunyikan Overlay
         overlay.style.display = 'none';
+        
+        // Catat waktu terakhir klik iklan
+        lastAdTime = currentTime;
       });
+
+      // LOGIKA RE-APPEAR: Munculkan iklan lagi saat video di-PAUSE
+      player.addEventListener('pause', () => {
+        const currentTime = new Date().getTime();
+        // Cek apakah sudah melewati masa cooldown (agar tidak spam berlebihan)
+        if (currentTime - lastAdTime > COOLDOWN_AD) {
+            showAdOverlay();
+        }
+      });
+
+      // OPSIONAL: Munculkan iklan setiap X menit meskipun video sedang jalan
+      // setInterval(() => {
+      //   if (!player.paused) {
+      //       showAdOverlay();
+      //       player.pause();
+      //   }
+      // }, 300000); // Contoh: Setiap 5 menit (300.000 ms) muncul iklan
     }
 
-    // Jalankan player
     initPlayer();
-
-    // Mencegah klik kanan
     document.addEventListener('contextmenu', e => e.preventDefault());
   </script>
 </body>
