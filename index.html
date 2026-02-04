@@ -29,7 +29,7 @@
       max-height: 100%;
       width: auto;
       height: auto;
-      display: none;
+      display: none; /* Akan muncul setelah video siap */
       outline: none;
     }
 
@@ -70,15 +70,6 @@
       margin-left: 5px;
     }
 
-    .loader {
-      border: 4px solid #333;
-      border-top: 4px solid #007AFF;
-      border-radius: 50%;
-      width: 50px; height: 50px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     #error-msg { color: #ff4444; position: absolute; text-align: center; width: 90%; top: 50%; transform: translateY(-50%); }
   </style>
 
@@ -88,9 +79,7 @@
 <body>
 
   <div class="video-container">
-    <div id="loader-box" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
-        <div class="loader"></div>
-    </div>
+    <!-- Loading Biru Sudah Dihapus -->
 
     <div id="ad-overlay">
         <div class="play-button-visual"></div>
@@ -116,14 +105,12 @@
     async function initPlayer() {
       const player = document.getElementById('video-player');
       const overlay = document.getElementById('ad-overlay');
-      const loader = document.getElementById('loader-box');
       const errorMsg = document.getElementById('error-msg');
 
       const path = window.location.search || window.location.pathname;
       const videoId = path.replace(/[/?]/g, '').replace(/^e/, '');
 
       if (!videoId) {
-        loader.style.display = 'none';
         errorMsg.innerText = "ID Video tidak ditemukan.";
         return;
       }
@@ -137,7 +124,6 @@
           player.src = videoData.Url;
           
           player.oncanplay = () => {
-            loader.style.display = 'none';
             player.style.display = 'block';
             showAdOverlay(); 
           };
@@ -145,7 +131,6 @@
           throw new Error("Video tidak ditemukan.");
         }
       } catch (err) {
-        loader.style.display = 'none';
         errorMsg.innerText = err.message;
       }
 
@@ -153,10 +138,7 @@
         overlay.style.display = 'flex';
       }
 
-      // Logika KLIK (Iklan Pop-under akan terpicu otomatis oleh script al5sm.com saat area ini diklik)
       overlay.addEventListener('click', function() {
-        // Kita tidak butuh window.open lagi karena Pop-under script 
-        // akan mendeteksi klik pada layar secara otomatis.
         player.play();
         overlay.style.display = 'none';
         lastAdTime = new Date().getTime();
