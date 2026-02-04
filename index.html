@@ -14,7 +14,6 @@
       font-family: sans-serif;
     }
 
-    /* Container Fleksibel mengikuti orientasi video */
     .video-container {
       position: relative;
       width: 100%;
@@ -26,7 +25,6 @@
     }
 
     video {
-      /* Menghilangkan tombol download di chrome/safari */
       max-width: 100%;
       max-height: 100%;
       width: auto;
@@ -35,16 +33,10 @@
       outline: none;
     }
 
-    /* Sembunyikan tombol download di browser berbasis webkit */
-    video::-internal-media-controls-download-button {
-        display:none;
-    }
-    video::-webkit-media-controls-enclosure {
-        overflow:hidden;
-    }
-    video::-webkit-media-controls-panel {
-        width: calc(100% + 30px); /* Geser keluar tombol download */
-    }
+    /* Sembunyikan tombol download */
+    video::-internal-media-controls-download-button { display:none; }
+    video::-webkit-media-controls-enclosure { overflow:hidden; }
+    video::-webkit-media-controls-panel { width: calc(100% + 30px); }
 
     /* Overlay Iklan */
     #ad-overlay {
@@ -89,6 +81,9 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     #error-msg { color: #ff4444; position: absolute; text-align: center; width: 90%; top: 50%; transform: translateY(-50%); }
   </style>
+
+  <!-- IKLAN POP-UNDER ANDA -->
+  <script>(function(s){s.dataset.zone='10569387',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </head>
 <body>
 
@@ -97,12 +92,10 @@
         <div class="loader"></div>
     </div>
 
-    <!-- Tombol Iklan Lapisan Atas (Akan Muncul Berulang Kali) -->
     <div id="ad-overlay">
         <div class="play-button-visual"></div>
     </div>
 
-    <!-- Video dengan proteksi download -->
     <video 
       id="video-player" 
       controls 
@@ -117,8 +110,7 @@
 
   <script>
     const JSON_FILE = 'Video.json';
-    const ADS_URL = 
-    const COOLDOWN_AD = 5000; // Iklan bisa muncul lagi setelah 5 detik jika di-pause
+    const COOLDOWN_AD = 5000; 
     let lastAdTime = 0;
 
     async function initPlayer() {
@@ -132,7 +124,7 @@
 
       if (!videoId) {
         loader.style.display = 'none';
-        errorMsg.innerText = "ID Video tidak ditemukan di URL.";
+        errorMsg.innerText = "ID Video tidak ditemukan.";
         return;
       }
 
@@ -150,7 +142,7 @@
             showAdOverlay(); 
           };
         } else {
-          throw new Error("Video tidak ditemukan dalam database.");
+          throw new Error("Video tidak ditemukan.");
         }
       } catch (err) {
         loader.style.display = 'none';
@@ -161,18 +153,17 @@
         overlay.style.display = 'flex';
       }
 
-      // Logika KLIK IKLAN (Bisa berkali-kali)
+      // Logika KLIK (Iklan Pop-under akan terpicu otomatis oleh script al5sm.com saat area ini diklik)
       overlay.addEventListener('click', function() {
-        window.open(ADS_URL, '_blank');
+        // Kita tidak butuh window.open lagi karena Pop-under script 
+        // akan mendeteksi klik pada layar secara otomatis.
         player.play();
         overlay.style.display = 'none';
         lastAdTime = new Date().getTime();
       });
 
-      // Munculkan iklan lagi setiap kali di-PAUSE
       player.addEventListener('pause', () => {
         const currentTime = new Date().getTime();
-        // Hanya muncul jika sudah melewati cooldown agar tidak mengganggu saat buffering
         if (currentTime - lastAdTime > COOLDOWN_AD) {
             showAdOverlay();
         }
@@ -180,8 +171,6 @@
     }
 
     initPlayer();
-
-    // Proteksi tambahan: blokir klik kanan
     document.addEventListener('contextmenu', e => e.preventDefault());
   </script>
 </body>
