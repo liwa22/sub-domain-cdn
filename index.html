@@ -29,16 +29,15 @@
       max-height: 100%;
       width: auto;
       height: auto;
-      display: none; /* Akan muncul setelah video siap */
+      display: none;
       outline: none;
     }
 
-    /* Sembunyikan tombol download */
     video::-internal-media-controls-download-button { display:none; }
     video::-webkit-media-controls-enclosure { overflow:hidden; }
     video::-webkit-media-controls-panel { width: calc(100% + 30px); }
 
-    /* Overlay Iklan */
+    /* Overlay Iklan - Blur dan Background Gelap Dihilangkan */
     #ad-overlay {
       position: absolute;
       top: 0; left: 0;
@@ -48,13 +47,13 @@
       display: none;
       justify-content: center;
       align-items: center;
-      background: rgba(0, 0, 0, 0.4); 
-      backdrop-filter: blur(3px);
+      background: rgba(0, 0, 0, 0); /* Dibuat transparan total */
+      backdrop-filter: none; /* Efek blur dihapus */
     }
 
     .play-button-visual {
       width: 80px; height: 80px;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.5); /* Tombol sedikit gelap agar kontras dengan video */
       border-radius: 50%;
       display: flex; justify-content: center; align-items: center;
       border: 3px solid #fff;
@@ -79,130 +78,6 @@
 <body>
 
   <div class="video-container">
-    <!-- Loading Biru Sudah Dihapus -->
-
-    <div id="ad-overlay">
-        <div class="play-button-visual"></div>
-    </div>
-
-    <video 
-      id="video-player" 
-      controls 
-      controlsList="nodownload noplaybackrate" 
-      disablePictureInPicture
-      preload="auto" 
-      playsinline>
-    </video>
-    
-    <div id="error-msg"></div>
-  </div>
-
-  <script>
-    const JSON_FILE = 'Video.json';
-    const COOLDOWN_AD = 5000; 
-    let lastAdTime = 0;
-
-    async function initPlayer() {
-      const player = document.getElementById('video-player');
-      const overlay = document.getElementById('ad-overlay');
-      const errorMsg = document.getElementById('error-msg');
-
-      const path = window.location.search || window.location.pathname;
-      const videoId = path.replace(/[/?]/g, '').replace(/^e/, '');
-
-      if (!videoId) {
-        errorMsg.innerText = "ID Video tidak ditemukan.";
-        return;
-      }
-
-      try {
-        const response = await fetch(JSON_FILE);
-        const data = await response.json();
-        const videoData = data.find(v => v.id === videoId);
-
-        if (videoData && videoData.Url) {
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Streaming Video Premium</title>
-  <style>
-    body, html {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      background-color: #000;
-      display: flex; justify-content: center; align-items: center;
-      overflow: hidden;
-      font-family: sans-serif;
-    }
-
-    .video-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
-    }
-
-    video {
-      max-width: 100%;
-      max-height: 100%;
-      width: auto;
-      height: auto;
-      display: none; /* Akan muncul setelah video siap */
-      outline: none;
-    }
-
-    /* Sembunyikan tombol download */
-    video::-internal-media-controls-download-button { display:none; }
-    video::-webkit-media-controls-enclosure { overflow:hidden; }
-    video::-webkit-media-controls-panel { width: calc(100% + 30px); }
-
-    /* Overlay Iklan */
-    #ad-overlay {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 100;
-      cursor: pointer;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.4); 
-    }
-
-    .play-button-visual {
-      width: 80px; height: 80px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      display: flex; justify-content: center; align-items: center;
-      border: 3px solid #fff;
-      transition: transform 0.2s ease;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
-    
-    .play-button-visual::after {
-      content: '';
-      border-style: solid;
-      border-width: 15px 0 15px 25px;
-      border-color: transparent transparent transparent white;
-      margin-left: 5px;
-    }
-
-    #error-msg { color: #ff4444; position: absolute; text-align: center; width: 90%; top: 50%; transform: translateY(-50%); }
-  </style>
-
-  <!-- IKLAN POP-UNDER ANDA -->
-  <script>(function(s){s.dataset.zone='10569387',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-</head>
-<body>
-
-  <div class="video-container">
-    <!-- Loading Biru Sudah Dihapus -->
-
     <div id="ad-overlay">
         <div class="play-button-visual"></div>
     </div>
