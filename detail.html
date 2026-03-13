@@ -1,186 +1,356 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREAMVID - Player</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.symbols.outlined/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        body { margin: 0; background: #0f0f0f; font-family: 'Inter', sans-serif; color: white; }
-        .header { display: flex; align-items: center; padding: 12px 20px; background: #0f0f0f; border-bottom: 1px solid #303030; position: sticky; top: 0; z-index: 100; }
-        .back-btn { cursor: pointer; margin-right: 15px; display: flex; align-items: center; text-decoration: none; color: white; }
-        .logo { font-size: 18px; font-weight: 800; }
-        
-        .container { max-width: 1000px; margin: auto; }
-        .video-section { width: 100%; background: #000; display: flex; justify-content: center; min-height: 220px; }
-        
-        .player-container { width: 100%; }
-        /* Style untuk video portrait (HP Vertikal) */
-        .player-container.portrait { max-width: 400px; margin: auto; }
+<title>STREAMVID - Player</title>
 
-        .info-section { padding: 20px; }
-        .video-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
-        .video-id { font-size: 12px; color: #777; background: #222; display: inline-block; padding: 2px 8px; border-radius: 4px; }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
-        .recommend-section { padding: 20px; border-top: 1px solid #222; }
-        .recommend-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; color: orange; }
-        
-        /* Grid Rekomendasi */
-        .recommend-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-        }
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
 
-        .rec-card { cursor: pointer; background: #161616; border-radius: 8px; overflow: hidden; text-decoration: none; color: white; transition: 0.3s; }
-        .rec-card:hover { background: #222; }
-        
-        .rec-thumb { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; }
-        .rec-thumb video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        
-        .rec-info { padding: 10px; }
-        .rec-name { font-size: 13px; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 34px; }
+<style>
 
-        @media (min-width: 768px) {
-            .recommend-grid { grid-template-columns: repeat(4, 1fr); }
-        }
-    </style>
+body{
+margin:0;
+background:#0f0f0f;
+font-family:'Inter',sans-serif;
+color:white;
+}
+
+.header{
+display:flex;
+align-items:center;
+padding:12px 20px;
+background:#0f0f0f;
+border-bottom:1px solid #303030;
+position:sticky;
+top:0;
+z-index:100;
+}
+
+.back-btn{
+cursor:pointer;
+margin-right:15px;
+display:flex;
+align-items:center;
+text-decoration:none;
+color:white;
+}
+
+.logo{
+font-size:18px;
+font-weight:800;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+}
+
+.video-section{
+width:100%;
+background:#000;
+display:flex;
+justify-content:center;
+min-height:220px;
+}
+
+.player-container{
+width:100%;
+}
+
+.player-container.portrait{
+max-width:420px;
+margin:auto;
+}
+
+.info-section{
+padding:20px;
+}
+
+.video-title{
+font-size:20px;
+font-weight:700;
+margin-bottom:8px;
+line-height:1.4;
+}
+
+.video-id{
+font-size:12px;
+color:#777;
+background:#222;
+display:inline-block;
+padding:2px 8px;
+border-radius:4px;
+}
+
+.recommend-section{
+padding:20px;
+border-top:1px solid #222;
+}
+
+.recommend-title{
+font-size:16px;
+font-weight:600;
+margin-bottom:15px;
+color:orange;
+}
+
+.recommend-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+}
+
+.rec-card{
+cursor:pointer;
+background:#161616;
+border-radius:8px;
+overflow:hidden;
+text-decoration:none;
+color:white;
+transition:0.3s;
+}
+
+.rec-card:hover{
+background:#222;
+}
+
+.rec-thumb{
+width:100%;
+aspect-ratio:16/9;
+background:#000;
+}
+
+.rec-thumb video{
+width:100%;
+height:100%;
+object-fit:cover;
+pointer-events:none;
+}
+
+.rec-info{
+padding:10px;
+}
+
+.rec-name{
+font-size:13px;
+font-weight:500;
+display:-webkit-box;
+-webkit-line-clamp:2;
+-webkit-box-orient:vertical;
+overflow:hidden;
+height:34px;
+}
+
+@media (min-width:768px){
+.recommend-grid{
+grid-template-columns:repeat(4,1fr);
+}
+}
+
+</style>
 </head>
+
 <body>
 
 <header class="header">
-    <a href="javascript:history.back()" class="back-btn">
-        <span class="material-symbols-outlined">arrow_back</span>
-    </a>
-    <div class="logo">STREAM<span style="color:orange;">VID</span></div>
+<a href="javascript:history.back()" class="back-btn">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+
+<div class="logo">
+STREAM<span style="color:orange;">VID</span>
+</div>
 </header>
 
 <div class="container">
-    <div class="video-section">
-        <div class="player-container" id="playerWrapper">
-            <video id="player" playsinline controls></video>
-        </div>
-    </div>
 
-    <div class="info-section">
-        <div class="video-title" id="mainTitle">Memuat judul...</div>
-        <div class="video-id" id="mainId">ID: --</div>
-    </div>
+<div class="video-section">
+<div class="player-container" id="playerWrapper">
+<video id="player" playsinline controls></video>
+</div>
+</div>
 
-    <div class="recommend-section">
-        <div class="recommend-title">Rekomendasi Video Acak</div>
-        <div class="recommend-grid" id="recommendGrid">
-            <!-- Video acak akan muncul di sini -->
-        </div>
-    </div>
+<div class="info-section">
+<div class="video-title" id="mainTitle">Memuat judul...</div>
+<div class="video-id" id="mainId">ID: --</div>
+</div>
+
+<div class="recommend-section">
+
+<div class="recommend-title">
+Rekomendasi Video
+</div>
+
+<div class="recommend-grid" id="recommendGrid"></div>
+
+</div>
+
 </div>
 
 <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
 <script>
-    // 1. Ambil ID dari URL browser
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoIdFromUrl = urlParams.get("id");
 
-    // 2. Inisialisasi Player Plyr
-    const player = new Plyr('#player', {
-        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
-    });
+const urlParams = new URLSearchParams(window.location.search);
+const videoIdFromUrl = urlParams.get("id");
 
-    // 3. Fungsi Ambil Data JSON
-    async function loadData() {
-        try {
-            // URL file JSON Anda
-            const response = await fetch('https://cdn.jsdelivr.net/gh/liwa22/json/Video.json');
-            const allVideos = await response.json();
+const player = new Plyr('#player',{
+controls:[
+'play-large',
+'play',
+'progress',
+'current-time',
+'mute',
+'volume',
+'fullscreen'
+]
+});
 
-            // Cari video yang ID-nya sama dengan yang ada di URL
-            // Kita gunakan String() untuk jaga-jaga jika ID di JSON berupa angka
-            const currentVideo = allVideos.find(v => String(v.id) === String(videoIdFromUrl));
+async function loadData(){
 
-            if (currentVideo) {
-                // Tampilkan Video Utama
-                displayMainVideo(currentVideo);
-                // Tampilkan Rekomendasi (Kirim semua video dan ID saat ini)
-                displayRecommendations(allVideos, videoIdFromUrl);
-            } else {
-                document.getElementById('mainTitle').innerText = "Video tidak ditemukan!";
-            }
+try{
 
-        } catch (error) {
-            console.error("Gagal memuat data:", error);
-            document.getElementById('mainTitle').innerText = "Gagal memuat video. Periksa koneksi internet.";
-        }
-    }
+const response = await fetch(
+'https://cdn.jsdelivr.net/gh/liwa22/json/Video.json'
+);
 
-    // 4. Fungsi Menampilkan Video Utama
-    function displayMainVideo(video) {
-        // Update Judul & ID sesuai format JSON Anda (Judul & id)
-        document.getElementById('mainTitle').innerText = video.Judul;
-        document.getElementById('mainId').innerText = "ID: " + video.id;
+let allVideos = await response.json();
 
-        // Pasang Source Video
-        player.source = {
-            type: 'video',
-            sources: [{ src: video.Url, type: 'video/mp4' }]
-        };
+if(!Array.isArray(allVideos)){
+console.error("JSON bukan array");
+return;
+}
 
-        // Deteksi apakah video Portrait (Tegak) atau Landscape (Mendatar)
-        const videoElement = document.getElementById('player');
-        videoElement.onloadedmetadata = function() {
-            const wrapper = document.getElementById('playerWrapper');
-            if (this.videoWidth / this.videoHeight < 1) {
-                wrapper.classList.add('portrait'); // Jika tegak, kecilkan kontainer
-            } else {
-                wrapper.classList.remove('portrait');
-            }
-        };
-    }
+const currentVideo =
+allVideos.find(v=>String(v.id)===String(videoIdFromUrl));
 
-    // 5. Fungsi Menampilkan Rekomendasi Acak
-    function displayRecommendations(data, currentId) {
-        const grid = document.getElementById('recommendGrid');
-        grid.innerHTML = ""; // Kosongkan grid
+if(currentVideo){
 
-        // Filter: Jangan masukkan video yang sedang diputar ke dalam rekomendasi
-        const otherVideos = data.filter(v => String(v.id) !== String(currentId));
+displayMainVideo(currentVideo);
 
-        // Acak urutan video (Shuffle)
-        const shuffled = otherVideos.sort(() => 0.5 - Math.random());
+displayRecommendations(allVideos,videoIdFromUrl);
 
-        // Ambil 8 video teratas hasil acak
-        const selectedVideos = shuffled.slice(0, 8);
+}else{
 
-        selectedVideos.forEach(v => {
-            const card = document.createElement('a');
-            card.className = "rec-card";
-            // Arahkan kembali ke halaman detail.html dengan ID baru
-            card.href = `detail.html?id=${v.id}`;
-            
-            card.innerHTML = `
-                <div class="rec-thumb">
-                    <video preload="metadata">
-                        <source src="${v.Url}#t=1" type="video/mp4">
-                    </video>
-                </div>
-                <div class="rec-info">
-                    <div class="rec-name">${v.Judul}</div>
-                </div>
-            `;
-            
-            grid.appendChild(card);
-        });
-    }
+document.getElementById('mainTitle').innerText =
+"Video tidak ditemukan";
 
-    // Jalankan aplikasi
-    if (videoIdFromUrl) {
-        loadData();
-    } else {
-        document.getElementById('mainTitle').innerText = "Tidak ada ID video di URL.";
-    }
+}
+
+}catch(err){
+
+console.error(err);
+
+document.getElementById('mainTitle').innerText =
+"Gagal memuat data";
+
+}
+
+}
+
+function displayMainVideo(video){
+
+document.getElementById('mainTitle').innerText =
+video.Judul;
+
+document.getElementById('mainId').innerText =
+"ID: "+video.id;
+
+player.source={
+type:'video',
+sources:[
+{
+src:video.Url,
+type:'video/mp4'
+}
+]
+};
+
+const videoElement=document.getElementById('player');
+
+videoElement.onloadedmetadata=function(){
+
+const wrapper=document.getElementById('playerWrapper');
+
+if(this.videoWidth/this.videoHeight<1){
+
+wrapper.classList.add('portrait');
+
+}else{
+
+wrapper.classList.remove('portrait');
+
+}
+
+};
+
+}
+
+function displayRecommendations(data,currentId){
+
+const grid=document.getElementById('recommendGrid');
+
+grid.innerHTML="";
+
+const otherVideos =
+data.filter(v=>String(v.id)!==String(currentId));
+
+if(otherVideos.length===0){
+
+grid.innerHTML =
+"<p style='opacity:.6'>Tidak ada rekomendasi</p>";
+
+return;
+
+}
+
+const shuffled =
+otherVideos.sort(()=>0.5-Math.random());
+
+const selected =
+shuffled.slice(0,8);
+
+selected.forEach(v=>{
+
+const card=document.createElement('a');
+
+card.className="rec-card";
+
+card.href=`detail.html?id=${v.id}`;
+
+card.innerHTML=`
+<div class="rec-thumb">
+<video preload="metadata" muted playsinline>
+<source src="${v.Url}#t=1" type="video/mp4">
+</video>
+</div>
+<div class="rec-info">
+<div class="rec-name">${v.Judul}</div>
+</div>
+`;
+
+grid.appendChild(card);
+
+});
+
+}
+
+if(videoIdFromUrl){
+
+loadData();
+
+}else{
+
+document.getElementById('mainTitle').innerText =
+"Tidak ada ID video";
+
+}
+
 </script>
 
 </body>
