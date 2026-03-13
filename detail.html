@@ -11,71 +11,47 @@
     <style>
         body { margin: 0; background: #0f0f0f; font-family: 'Inter', sans-serif; color: white; }
         .header { display: flex; align-items: center; padding: 12px 20px; background: #0f0f0f; border-bottom: 1px solid #303030; position: sticky; top: 0; z-index: 100; }
-        .back-btn { cursor: pointer; margin-right: 15px; display: flex; align-items: center; }
+        .back-btn { cursor: pointer; margin-right: 15px; display: flex; align-items: center; text-decoration: none; color: white; }
         .logo { font-size: 18px; font-weight: 800; }
         
-        .container { max-width: 1100px; margin: auto; }
-        .video-section { width: 100%; background: #000; display: flex; justify-content: center; }
+        .container { max-width: 1000px; margin: auto; }
+        .video-section { width: 100%; background: #000; display: flex; justify-content: center; min-height: 200px; }
         
-        .player-container { width: 100%; max-width: 100%; }
-        .player-container.portrait { max-width: 450px; margin: auto; }
+        .player-container { width: 100%; }
+        .player-container.portrait { max-width: 400px; margin: auto; }
 
         .info-section { padding: 20px; }
-        .video-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
-        .video-id { font-size: 12px; color: #aaa; background: #333; display: inline-block; padding: 2px 8px; border-radius: 4px; }
+        .video-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .video-id { font-size: 12px; color: #777; }
 
-        /* REKOMENDASI CSS */
-        .recommend-section { padding: 20px; border-top: 1px solid #303030; }
-        .recommend-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #fff; }
+        .recommend-section { padding: 20px; border-top: 1px solid #222; }
+        .recommend-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; color: orange; }
         
         .recommend-grid { 
             display: grid; 
-            grid-template-columns: repeat(2, 1fr); /* 2 kolom di HP */
+            grid-template-columns: repeat(2, 1fr); 
             gap: 15px; 
         }
 
-        .rec-card { cursor: pointer; transition: transform 0.2s; }
-        .rec-card:hover { transform: scale(1.02); }
+        .rec-card { cursor: pointer; background: #161616; border-radius: 8px; overflow: hidden; text-decoration: none; color: white; display: block; }
+        .rec-thumb { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
+        .rec-thumb video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .rec-info { padding: 8px; }
+        .rec-name { font-size: 13px; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .rec-thumb { 
-            width: 100%; 
-            aspect-ratio: 16/9; 
-            background: #222; 
-            border-radius: 10px; 
-            overflow: hidden; 
-            position: relative;
+        @media (min-width: 600px) {
+            .recommend-grid { grid-template-columns: repeat(3, 1fr); }
         }
-
-        .rec-thumb video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-        }
-
-        .rec-info { padding: 8px 0; }
-        .rec-name { 
-            font-size: 14px; 
-            font-weight: 500; 
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            color: #efefef;
-        }
-
-        /* Responsive Desktop */
-        @media (min-width: 768px) {
-            .recommend-grid { grid-template-columns: repeat(4, 1fr); }
-        }
+        
+        .error-msg { padding: 50px; text-align: center; color: #ff4444; }
     </style>
 </head>
 <body>
 
 <header class="header">
-    <div class="back-btn" onclick="history.back()">
+    <a href="index.html" class="back-btn">
         <span class="material-symbols-outlined">arrow_back</span>
-    </div>
+    </a>
     <div class="logo">STREAM<span style="color:orange;">VID</span></div>
 </header>
 
@@ -87,107 +63,127 @@
     </div>
 
     <div class="info-section">
-        <div class="video-title" id="mainTitle">Memuat judul...</div>
+        <h1 class="video-title" id="mainTitle">Memuat video...</h1>
         <div class="video-id" id="mainId">ID: --</div>
     </div>
 
     <div class="recommend-section">
-        <div class="recommend-title">Video Rekomendasi</div>
-        <div class="recommend-grid" id="recommendGrid">
-            <!-- Rekomendasi akan muncul di sini -->
-        </div>
+        <div class="recommend-title">Video Lainnya</div>
+        <div id="status-msg"></div>
+        <div class="recommend-grid" id="recommendGrid"></div>
     </div>
 </div>
 
 <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
 <script>
+    // 1. Ambil ID dari URL (?id=...)
     const params = new URLSearchParams(window.location.search);
     const videoId = params.get("id");
 
+    // 2. Inisialisasi Player
     const player = new Plyr('#player', {
-        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-        tooltips: { controls: true, seek: true }
+        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
     });
 
-    async function loadData() {
+    // 3. Fungsi Utama
+    async function init() {
+        if (!videoId) {
+            document.getElementById('mainTitle').innerText = "ID Video tidak ditemukan di URL!";
+            return;
+        }
+
         try {
+            // Fetch data JSON
             const response = await fetch('https://cdn.jsdelivr.net/gh/liwa22/json/Video.json');
+            if (!response.ok) throw new Error("Gagal mengambil file JSON");
+            
             const data = await response.json();
+            console.log("Data berhasil dimuat:", data); // Debug log
 
-            const currentVideo = data.find(v => String(v.id) === String(videoId));
+            // Cari video berdasarkan ID (Cek huruf besar/kecil ID)
+            const video = data.find(v => String(v.id || v.Id) === String(videoId));
 
-            if (currentVideo) {
-                setupPlayer(currentVideo);
-                showRecommendations(data, videoId);
+            if (video) {
+                renderVideo(video);
+                renderRecommendations(data, videoId);
             } else {
-                document.getElementById('mainTitle').innerText = "Video tidak ditemukan.";
+                document.getElementById('mainTitle').innerHTML = `<span class="error-msg">Video dengan ID ${videoId} tidak ada di database.</span>`;
             }
-        } catch (err) {
-            console.error("Gagal memuat JSON", err);
-            document.getElementById('mainTitle').innerText = "Gagal memuat data.";
+
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById('mainTitle').innerText = "Koneksi internet bermasalah atau JSON salah.";
         }
     }
 
-    function setupPlayer(video) {
-        document.getElementById('mainTitle').innerText = video.Judul;
-        document.getElementById('mainId').innerText = "ID: " + video.id;
+    // Fungsi menampilkan video utama
+    function renderVideo(v) {
+        // Handle properti huruf besar/kecil (Judul vs judul)
+        const judul = v.Judul || v.judul || "Tanpa Judul";
+        const url = v.Url || v.url;
+        const id = v.id || v.Id;
+
+        document.getElementById('mainTitle').innerText = judul;
+        document.getElementById('mainId').innerText = "ID: " + id;
 
         player.source = {
             type: 'video',
-            sources: [{ src: video.Url, type: 'video/mp4' }]
+            sources: [{ src: url, type: 'video/mp4' }]
         };
 
-        const videoElement = document.getElementById('player');
-        videoElement.onloadedmetadata = function() {
-            const ratio = this.videoWidth / this.videoHeight;
-            const wrapper = document.getElementById('playerWrapper');
-            if (ratio < 1) {
-                wrapper.classList.add('portrait');
-            } else {
-                wrapper.classList.remove('portrait');
+        // Otomatis cek Portrait/Landscape
+        const vidTag = document.querySelector('#player');
+        vidTag.onloadedmetadata = function() {
+            if (this.videoWidth / this.videoHeight < 1) {
+                document.getElementById('playerWrapper').classList.add('portrait');
             }
         };
     }
 
-    function showRecommendations(data, currentId) {
+    // Fungsi menampilkan rekomendasi
+    function renderRecommendations(data, currentId) {
         const grid = document.getElementById('recommendGrid');
-        grid.innerHTML = "";
+        grid.innerHTML = ""; // Bersihkan loading
 
-        // Filter: Jangan tampilkan video yang sedang diputar
-        const filtered = data.filter(v => String(v.id) !== String(currentId));
+        // Filter buang video yang sedang ditonton
+        const filtered = data.filter(v => String(v.id || v.Id) !== String(currentId));
 
-        // Acak urutan video
+        // Acak urutan (Shuffle)
         const shuffled = filtered.sort(() => 0.5 - Math.random());
 
-        // Ambil 8 video saja untuk rekomendasi
-        const selection = shuffled.slice(0, 8);
+        // Ambil 6 video teratas
+        const selected = shuffled.slice(0, 6);
 
-        selection.forEach(v => {
-            const card = document.createElement('div');
+        if (selected.length === 0) {
+            document.getElementById('status-msg').innerText = "Tidak ada video lain.";
+            return;
+        }
+
+        selected.forEach(v => {
+            const judul = v.Judul || v.judul || "Tanpa Judul";
+            const url = v.Url || v.url;
+            const id = v.id || v.Id;
+
+            const card = document.createElement('a');
+            card.href = `detail.html?id=${id}`;
             card.className = "rec-card";
             card.innerHTML = `
                 <div class="rec-thumb">
                     <video preload="metadata">
-                        <source src="${v.Url}#t=0.5" type="video/mp4">
+                        <source src="${url}#t=1" type="video/mp4">
                     </video>
                 </div>
                 <div class="rec-info">
-                    <div class="rec-name">${v.Judul}</div>
+                    <div class="rec-name">${judul}</div>
                 </div>
             `;
-
-            // Klik untuk pindah ke video tersebut
-            card.onclick = () => {
-                window.location.href = `detail.html?id=${v.id}`;
-            };
-
             grid.appendChild(card);
         });
     }
 
-    // Jalankan fungsi
-    loadData();
+    // Jalankan
+    init();
 </script>
 
 </body>
